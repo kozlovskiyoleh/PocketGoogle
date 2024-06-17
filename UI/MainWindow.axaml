@@ -6,7 +6,7 @@
         Width="300">
     <StackPanel>
         <Grid ColumnDefinitions="*,*">
-            <TextBox Name="Request" Watermark="search...">Я</TextBox>
+            <TextBox Name="Request" Watermark="search...">Чтоб</TextBox>
             <Button Name="Run" Grid.Column="1">i feel lucky!</Button>
         </Grid>
         <ListBox Name="Results" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -9,29 +10,45 @@ namespace PocketGoogle;
 
 public class Indexer : IIndexer
 {
-    private Dictionary<int, List<string>> _documents = new();
-
+    private Dictionary<string, Dictionary<int, List<int>>> _documents = new();
 
 	public void Add(int id, string documentText)
 	{
 		string pattern = @"\s|\?|\,|\.|\!|\:|\-|\n|\r";
         Regex regex = new Regex(pattern);
-		List<string> words = regex.Split(documentText).Where(word => word != "").ToList();
-		_documents.Add(id, words);
-	}
+		List<string> words = regex.Split(documentText).ToList();
+		foreach(string word in words)
+		{
+            List<int> wordsIndexesInText = new List<int>();
+            FindWordIndexes(words, word, ref wordsIndexesInText, 0);
+			_documents[word] = new Dictionary<int, List<int>>() { { id, wordsIndexesInText } };
+		}
+    }
 
-	public List<int> GetIds(string word)
+	public void FindWordIndexes(List<string> words, string wordToFind, ref List<int> indexes, int index)
 	{
-		throw new NotImplementedException();
+		index = words.IndexOf(wordToFind, index);
+        if (index == -1 || index > words.Count)
+        {
+            return;
+        }
+        FindWordIndexes(words, wordToFind, ref indexes, index+1);
+        indexes.Add(index);
+    }
+
+    public List<int> GetIds(string word)
+	{
+		return _documents.Where(x=>x.Key==word).SelectMany(x => x.Value.Select(y => y.Key)).ToList();
 	}
 
 	public List<int> GetPositions(int id, string word)
 	{
-		throw new NotImplementedException();
+		return _documents.Where(document => document.Key == word).SelectMany(y => y.Value.Where(y=>y.Key==id)
+			.SelectMany(y=>y.Value.Select(y=>y))).ToList();
 	}
 
 	public void Remove(int id)
 	{
-		throw new NotImplementedException();
+		//_documents.Remove(id);
 	}
 }
