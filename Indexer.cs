@@ -21,17 +21,17 @@ public class Indexer : IIndexer
 		List<string> words = regex.Split(documentText).ToList();
 		foreach(string word in words)
 		{
-			if (_documents.ContainsKey(word) && _documents[word].ContainsKey(id))
+			if (!_documents.ContainsKey(word))
 			{
-				_documents[word][id].Add(documentText.IndexOf(word));
+				_documents.Add(word, null);
             }
-			else if (_documents.ContainsKey(word))
+			else if (!_documents[word].ContainsKey(id))
 			{
-                _documents[word].Add(id, new List<int>(documentText.IndexOf(word)));
+                _documents[word].Add(id, null);
             }
 			else
 			{
-                _documents.Add(word, new Dictionary<int, List<int>> { { id, new List<int>(documentText.IndexOf(word)) } });
+				_documents[word][id].Add(documentText.IndexOf(word));
             }
         }
     }
