@@ -21,18 +21,9 @@ public class Indexer : IIndexer
 		List<string> words = regex.Split(documentText).ToList();
 		foreach(string word in words)
 		{
-			if (!_documents.ContainsKey(word))
-			{
-				_documents.Add(word, null);
-            }
-			else if (!_documents[word].ContainsKey(id))
-			{
-                _documents[word].Add(id, null);
-            }
-			else
-			{
-				_documents[word][id].Add(documentText.IndexOf(word));
-            }
+			_documents.Add(word, null);
+            _documents[word].Add(id, null);
+			_documents[word][id].Add(documentText.IndexOf(word));
         }
     }
 
