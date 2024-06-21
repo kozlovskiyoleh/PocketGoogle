@@ -13,49 +13,33 @@ public class Indexer : IIndexer
 {
     private Dictionary<string, Dictionary<int, List<int>>> _documents = new();
 
-	//Bug here in that method
-	public void Add(int id, string documentText)
-	{
-		string pattern = @"(\s)|(\?)|(\,)|(\.)|(\!)|(\:)|(\-)|(\n)|(\r)";
+    //Bug here in that method
+    public void Add(int id, string documentText)
+    {
+        string pattern = @"(\s)|(\?)|(\,)|(\.)|(\!)|(\:)|(\-)|(\n)|(\r)";
         Regex regex = new Regex(pattern);
-		List<string> words = regex.Split(documentText).ToList();
-		foreach(string word in words)
-		{
-			_documents.Add(word, null);
-            _documents[word].Add(id, null);
-			_documents[word][id].Add(documentText.IndexOf(word));
-        }
-    }
-
-	public void FindWordIndexes(string documentText, string wordToFind, ref List<int> indexes, int index)
-	{
-        index = documentText.IndexOf(wordToFind, index);
-        if (index == -1 || index == documentText.Length)
+        int position = -1;
+        foreach (string word in regex.Split(documentText))
         {
-            return;
+            if (!_documents.ContainsKey(word))
+                _documents.Add(word, new Dictionary<int, List<int>>());
+            if (!_documents[word].ContainsKey(id))
+                _documents[word].Add(id, new List<int>());
+            _documents[word][id].Add(position + 1);
+            position += word.Length;
         }
-        FindWordIndexes(documentText, wordToFind, ref indexes, index+1);
-        indexes.Add(index);
     }
 
-    public List<int> GetIds(string word)
-	{
-		return _documents.Where(x => x.Key == word).SelectMany(x => x.Value.Select(y => y.Key)).ToList();
-	}
+    public List<int> GetIds(string word) => _documents[word].Keys.ToList();
 
-	//Refactor this
-	public List<int> GetPositions(int id, string word)
-	{
-		List<int> temp = _documents.Where(document => document.Key == word).SelectMany(y => y.Value.Where(y => y.Key == id)
-            .SelectMany(y => y.Value.Select(y => y))).ToList();
-		return temp;
-	}
+    //Refactor this
+    public List<int> GetPositions(int id, string word)=> _documents[word][id];
 
-	public void Remove(int id)
-	{
-		foreach(var document in _documents.Select(x=>x.Value))
-		{
-			document.Remove(id);
-		}
-	}
+    public void Remove(int id)
+    {
+        foreach (var key in _documents.Keys)
+        {
+            _documents[key].Remove(id);
+        }
+    }
 }
